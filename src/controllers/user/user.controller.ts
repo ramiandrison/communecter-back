@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { CreateUserDto } from '../dto/create-user.dto';
-import { QueryUserDto } from '../dto/query-user.dto';
-import { UpdateUserDto } from '../dto/update-user.dto';
-import { UserService } from '../services/user.service';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { CreateUserDto } from '../../dto/user/create-user.dto';
+import { QueryUserDto } from '../../dto/user/query-user.dto';
+import { UserService } from '../../services/user/user.service';
+import { UpdateUserDto } from '../../dto/user/update-user.dto';
+//import { AuthGuard } from 'src/auth/guard/auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -13,14 +14,15 @@ export class UserController {
       return this.usersService.create(createUserDto);
     }
 
+    //@UseGuards(AuthGuard)
     @Get()
     findAll(@Query() query: QueryUserDto) {
       return this.usersService.findAll();
     }
 
     @Get(':id')
-    findOne(@Param('id') id: string) {
-      return `This action returns a #${id} cat`;
+    findOneById(@Param('id') id: number) {
+        return this.usersService.findOneById(id);
     }
 
     @Put(':id')

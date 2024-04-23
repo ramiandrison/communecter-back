@@ -1,8 +1,9 @@
 export class CreateUserDto {
     firstName: string;
     lastName: string;
-    username?: string;
-    slug?: string;
+    email: string;
+    slug: string;
+    password: string;
     birthDate?: Date;
     phone?: string;
 }
