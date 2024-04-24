@@ -1,8 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { CreateUserDto } from '../../dto/user/create-user.dto';
 import { QueryUserDto } from '../../dto/user/query-user.dto';
 import { UserService } from '../../services/user/user.service';
 import { UpdateUserDto } from '../../dto/user/update-user.dto';
+import { GetUser } from 'src/decorators/user.connected';
+import { Response } from 'express';
 //import { AuthGuard } from 'src/auth/guard/auth.guard';
 
 @Controller('user')
@@ -11,13 +13,12 @@ export class UserController {
 
     @Post()
     create(@Body() createUserDto: CreateUserDto) {
-      return this.usersService.create(createUserDto);
+        return this.usersService.create(createUserDto);
     }
 
-    //@UseGuards(AuthGuard)
     @Get()
-    findAll(@Query() query: QueryUserDto) {
-      return this.usersService.findAll();
+    findAll(@Query() query: QueryUserDto, /*@GetUser() user:any*/) {
+        return this.usersService.findAll(query);
     }
 
     @Get(':id')
@@ -26,12 +27,15 @@ export class UserController {
     }
 
     @Put(':id')
-    update(@Param('id') id: string, @Body() updateCatDto: UpdateUserDto) {
-      return `This action updates a #${id} cat`;
+    update(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() updateUserDto: UpdateUserDto
+    ) {
+        return this.usersService.update(id, updateUserDto);
     }
 
     @Delete(':id')
-    remove(@Param('id') id: string) {
-      return `This action removes a #${id} cat`;
+    remove(@Param('id',ParseIntPipe) id: string) {
+        return `This action removes a #${id} cat`;
     }
 }

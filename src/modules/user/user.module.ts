@@ -4,13 +4,21 @@ import { User } from '../../entities/user/use.entity';
 import { UserService } from '../../services/user/user.service';
 import { UserController } from '../../controllers/user/user.controller';
 import { JwtModule } from '@nestjs/jwt';
+import { UserParser } from 'src/parsers/user/user.parser';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), JwtModule],
-  providers: [
-      UserService
-  ],
-  controllers: [UserController],
-  exports: [TypeOrmModule]
+    imports: [TypeOrmModule.forFeature([User]), JwtModule],
+    providers: [
+        UserService,
+        UserParser,
+    ],
+    controllers: [
+        UserController
+    ],
+    exports: [
+        TypeOrmModule,
+        UserService,
+        UserParser
+    ]
 })
 export class UsersModule {}

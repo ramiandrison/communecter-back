@@ -1,10 +1,32 @@
+import { IsDate, IsEmail, IsNotEmpty, IsOptional } from "class-validator";
+
 export class QueryUserDto {
-    firstName?: string;
-    lastName?: string;
-    username?: string;
-    slug?: string;
-    birthDate?: Date;
-    phone?: string;
+    @IsOptional()
+    @IsNotEmpty()
+    firstName: string;
+
+    @IsOptional()
+    @IsNotEmpty()
+    lastName: string;
+
+    @IsOptional()
+    @IsEmail()
+    email: string;
+
+    @IsOptional()
+    @IsNotEmpty()
+    password: string;
+
+    @IsOptional()
+    @IsDate()
+    birthDate: Date;
+
+    @IsOptional()
+    phone: string;
+
+    @IsOptional()
     limit?: number;
-    index?: number;
+
+    @IsOptional()
+    page?: number;
 }

@@ -24,7 +24,8 @@ import { AuthModule } from './modules/auth/auth.module';
             entities: [User],
             synchronize: true,
         }),
-        UsersModule, AuthModule
+        UsersModule, 
+        AuthModule
       ],
       controllers: [
         AppController
