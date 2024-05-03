@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { UserDto } from "src/dto/user/user.dto";
-import { User } from "src/entities/user/use.entity";
+import { User } from "src/entities/user/user.entity";
 
 @Injectable()
 export class UserParser {

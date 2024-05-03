@@ -1,4 +1,5 @@
 import { IsDate, IsEmail, IsNotEmpty, IsOptional } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class QueryUserDto {
     @IsOptional()
@@ -24,9 +25,11 @@ export class QueryUserDto {
     @IsOptional()
     phone: string;
 
+    @ApiProperty({ example: "10", description: 'Limiter le nombre de resultat', required: false })
     @IsOptional()
     limit?: number;
 
+    @ApiProperty({ example: "6", description: 'Aller à une page', required: false })
     @IsOptional()
     page?: number;
 }

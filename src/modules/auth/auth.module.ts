@@ -10,23 +10,30 @@ import { AuthService } from 'src/services/auth/auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from 'src/guards/jwt.strategy';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { TokenBlackList } from 'src/entities/tokenBlackList/token.black-list';
+import { EmailService } from 'src/services/email/email.service';
 
 @Module({
     imports: [
         UsersModule,
         PassportModule,
-        JwtModule.registerAsync({
+        TypeOrmModule.forFeature([TokenBlackList]),
+        JwtModule.register({}),
+        //Commented because login and count activation and reset password token have different expiration (See authService)
+        /*JwtModule.registerAsync({
           imports: [ConfigModule],
           useFactory: async (configService: ConfigService) => ({
               secret: configService.get<string>('JWT_SECRET'),
               signOptions: { expiresIn: '15m' },
           }),
           inject: [ConfigService],
-        }),
+        }),*/
     ],
     providers: [
         AuthService,
         UserService,
+        EmailService,
         JwtStrategy,
         /*{
           provide: APP_GUARD,

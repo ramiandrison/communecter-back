@@ -1,12 +1,12 @@
 export class ApiResponse<T> {
     // Define properties that will be set by the constructor
     public data: T;
-    public message: string;
+    public message: string | any;
     public success: boolean;
     public statusCode: number;
     public errors?: string[];
 
-    constructor(data: any, message: string, success: boolean, statusCode: number, errors?: string[]) {
+    constructor(data: any, message: string | any, success: boolean, statusCode: number, errors?: string[]) {
         // Initialize properties with the values passed to the constructor
         this.data = data;
         this.message = message;

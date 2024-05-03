@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, IsNull } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
 export class User {
@@ -17,6 +18,9 @@ export class User {
     @Column()
     password: string;
 
+    @Column({ nullable: true })
+    resetPasswordToken: string;
+
     @Column()
     email: string;
 
@@ -30,5 +34,8 @@ export class User {
     phone: string;
 
     @Column({ default: true })
-    isActive: boolean;
+    activated: boolean;
+
+    @Column({ nullable: true })
+    activationToken: Date;
 }

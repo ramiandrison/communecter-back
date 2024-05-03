@@ -1,14 +1,15 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { ConflictException, HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../../entities/user/use.entity';
+import { User } from '../../entities/user/user.entity';
 import { CreateUserDto } from '../../dto/user/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UserDto } from 'src/dto/user/user.dto';
 import { UserParser } from 'src/parsers/user/user.parser';
 import { QueryUserDto } from 'src/dto/user/query-user.dto';
 import { UpdateUserDto } from 'src/dto/user/update-user.dto';
-import { ApiResponse } from 'src/config/api.response';
+import { ApiResponse } from 'src/filters/api.response';
+import { MESSAGE_USER_NOT_FOUND, MESSAGE_USER_OR_EMAIL_ALREADY_EXIST } from 'src/constants/view-model';
 @Injectable()
 export class UserService {
     constructor(
@@ -17,20 +18,15 @@ export class UserService {
         private userParser: UserParser
     ) {}
 
-    async create(createUserDto: CreateUserDto): Promise<ApiResponse<UserDto|null>> {
-        const existUser = await this.usersRepository.findOne({
-            where : {
-              email : createUserDto.email
-            }
-        });
+    async save(user: User){
+        return this.usersRepository.save(user)
+    }
+
+    async create(createUserDto: CreateUserDto): Promise<UserDto|null> {
+        const existUser = await this.usersRepository.findOneBy({email : createUserDto.email});
 
         if(existUser){
-            return new ApiResponse<null>(
-                null,
-                'User already exist',
-                false,
-                HttpStatus.UNAUTHORIZED
-            )
+            throw new ConflictException(null, MESSAGE_USER_OR_EMAIL_ALREADY_EXIST);
         }
         const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
         const newUser = this.usersRepository.create({
@@ -40,38 +36,19 @@ export class UserService {
             email: createUserDto.email,
         });
 
-        const user: User = await this.usersRepository.save(newUser);
-        const userDto : UserDto = this.userParser.parseOne(user);
-
-        return new ApiResponse<UserDto>(
-            userDto,
-            'User saved',
-            true,
-            HttpStatus.CREATED
-        )
+        const user: User = await this.save(newUser);
+        return this.userParser.parseOne(user);
     }
 
-    async update(userId: number, updateUserDto: UpdateUserDto): Promise<ApiResponse<UserDto|null>> {
+    async update(userId: number, updateUserDto: UpdateUserDto): Promise<UserDto|any> {
         const existUser = await this.usersRepository.findOneBy({ id: userId });
         if (!existUser) {
-            return new ApiResponse<null>(
-                null,
-                'User not found',
-                false,
-                HttpStatus.NOT_FOUND
-            )
+            throw new NotFoundException(null, MESSAGE_USER_NOT_FOUND);
         }
         Object.assign(existUser, updateUserDto);
 
-        const user = await this.usersRepository.save(existUser);
-        const userDto =  this.userParser.parseOne(user);
-
-        return new ApiResponse<UserDto>(
-            userDto,
-            'User updated',
-            true,
-            HttpStatus.OK
-        )
+        const user = await this.save(existUser);
+        return this.userParser.parseOne(user);
     }
 
     async paginate(page: number = 1, limit: number = 10): Promise<{ results: UserDto[]; total: number }> {
@@ -87,34 +64,24 @@ export class UserService {
         };
     }
 
-    async findAll(query: QueryUserDto): Promise<ApiResponse<any>> {
-        let data = null;
-        if(query?.page && query?.limit){
-            data = await this.paginate(query?.page, query?.limit);
-        }else{
-            const users = await this.usersRepository.find();
-            data = this.userParser.parseMultiple(users)
-        }
-
-        return new ApiResponse<any>(
-            data,
-            'Success',
-            true,
-            HttpStatus.OK
-        )
+    async findAll(query: QueryUserDto): Promise<any> {
+        const data = query?.page && query?.limit
+            ? await this.paginate(query.page, query.limit)
+            : this.userParser.parseMultiple(await this.usersRepository.find());
+        return data
     }
 
     async findOneById(id: number): Promise<UserDto | null> {
         const user = await this.usersRepository.findOneBy({ id });
-        return this.userParser.parseOne(user)
+        return user ? this.userParser.parseOne(user) : null
     }
 
-    findByEmail(email: string): Promise<User | null>{
-        return this.usersRepository.findOne({
-            where : {
-              email
-            }
-        });
+    async findByEmail(email: string): Promise<User | null>{
+        return await this.usersRepository.findOneBy({ email });
+    }
+
+    async findByResetPassWordToken(resetPasswordToken: string): Promise<User | null>{
+        return this.usersRepository.findOneBy({ resetPasswordToken });
     }
 
     async remove(id: number): Promise<void> {
