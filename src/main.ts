@@ -19,6 +19,8 @@ async function bootstrap() {
 
     app.useGlobalInterceptors(new TransformInterceptor());
 
+    //app.setGlobalPrefix('api'); // /api/route
+
     app.useGlobalFilters(new HttpExceptionFilter());
 
     const config = new DocumentBuilder()

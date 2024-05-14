@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Request } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, Req, Request } from '@nestjs/common';
 import { Public } from 'src/decorators/public.decorator';
 //import { GetUser } from 'src/decorators/user.connected';
 import { LoginDto } from 'src/dto/auth/login.dto';
@@ -10,6 +10,9 @@ import {
     ApiTags,
 } from '@nestjs/swagger';
 import { ResetPasswordDto } from 'src/dto/auth/reset-password.dto';
+import { GetUser } from 'src/decorators/user.connected';
+import { ChangePasswordDto } from 'src/dto/auth/change-password.dto';
+import { ActiveAccountDto } from 'src/dto/auth/active-account.dto';
 
 @Controller()
 export class AuthController {
@@ -45,8 +48,22 @@ export class AuthController {
     @Public()
     @HttpCode(HttpStatus.OK)
     @Post('resetPassword')
-    @ApiOperation({ summary: 'Rejeter le mot de passe' })
+    @ApiOperation({ summary: 'Rejeter le mot de passe si oublié' })
     resetPassword(@Body() resetPasswordDto: ResetPasswordDto){
         return this.authService.resetPassword(resetPasswordDto);
+    }
+
+    @Get('changePassword')
+    @ApiOperation({ summary: 'Changer le mot de passe' })
+    @ApiBearerAuth()
+    changePassword(changePassword: ChangePasswordDto, @GetUser() user:any){
+        // teto no farany
+    }
+
+    @Public()
+    @Get('activeAccount')
+    @ApiOperation({ summary: 'Activation de compte' })
+    activeAccount(@Query() activeAccountDto: ActiveAccountDto){
+        return this.authService.activeAccount(activeAccountDto);
     }
 }

@@ -10,6 +10,8 @@ import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from '../email/email.service';
 import { ResetPasswordDto } from 'src/dto/auth/reset-password.dto';
+import { ChangePasswordDto } from 'src/dto/auth/change-password.dto';
+import { ActiveAccountDto } from 'src/dto/auth/active-account.dto';
 
 @Injectable()
 export class AuthService {
@@ -94,21 +96,29 @@ export class AuthService {
         })
     }
 
+    //Reset password if forget
     async resetPassword(resetPasswordDto : ResetPasswordDto): Promise<any>{
         const user = await this.userService.findByResetPassWordToken(resetPasswordDto.token);
         if (!user) {
             throw new NotFoundException(null, MESSAGE_USER_NOT_FOUND);
         }
 
-        const userData = this.verifyToken(resetPasswordDto.token);
+        const userData = await this.verifyToken(resetPasswordDto.token);
+        
         if(userData){
             if(resetPasswordDto.password !== resetPasswordDto.duplicatePassword){
-                throw new UnauthorizedException(MESSAGE_TWO_PASSWORD_NOT_EQUAL)
+                throw new UnauthorizedException(null,MESSAGE_TWO_PASSWORD_NOT_EQUAL)
             }
             const hashedPassword = await bcrypt.hash(resetPasswordDto.password, 10);
             user.password = hashedPassword;
+            user.resetPasswordToken = null;
             await this.userService.save(user);
         }
+    }
+
+    //Change password if you want to change it
+    async changePassword(changePasswordDto: ChangePasswordDto): Promise<any>{
+
     }
 
     //login not pass here (only activation token and reset password token)
@@ -118,7 +128,22 @@ export class AuthService {
                 secret: this.configService.get<string>('JWT_SECRET'),
             });
         } catch (e) {
-            throw new UnauthorizedException(MESSAGE_EXPIRED_TOKEN)
+            throw new UnauthorizedException(null,MESSAGE_EXPIRED_TOKEN)
+        }
+    }
+
+    async activeAccount(activeAccountDto : ActiveAccountDto): Promise<any>{
+        const user = await this.userService.findByAccountActivationToken(activeAccountDto.token);
+        if (!user) {
+            throw new NotFoundException(null, MESSAGE_USER_NOT_FOUND);
+        }
+
+        const userData = await this.verifyToken(activeAccountDto.token);
+        
+        if(userData){
+            user.activated = true;
+            user.activationToken = null;
+            await this.userService.save(user);
         }
     }
 }

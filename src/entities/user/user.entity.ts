@@ -37,5 +37,5 @@ export class User {
     activated: boolean;
 
     @Column({ nullable: true })
-    activationToken: Date;
+    activationToken: string;
 }

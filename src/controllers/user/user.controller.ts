@@ -9,6 +9,7 @@ import {
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger';
+import { Public } from 'src/decorators/public.decorator';
 
 @ApiBearerAuth()
 @ApiTags('User')
@@ -16,6 +17,7 @@ import {
 export class UserController {
     constructor(private readonly usersService: UserService) {}
 
+    @Public()
     @Post()
     @ApiOperation({ summary: 'Create user' })
     create(@Body() createUserDto: CreateUserDto) {
