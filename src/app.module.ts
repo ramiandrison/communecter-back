@@ -26,12 +26,15 @@ import { EmailModule } from './modules/email/email.module';
         TypeOrmModule.forRoot({
             type: "postgres",
             host: process.env.DATABASE_HOST,
-            //port: parseInt(process.env.DATABASE_PORT),
+            port: parseInt(process.env.DATABASE_PORT),
             username: process.env.DATABASE_USER,
             password: process.env.DATABASE_PASSWORD,
             database: process.env.DATABASE_NAME,
-            entities: [User,TokenBlackList],
+            entities: [User,TokenBlackList], //[__dirname + '/**/*.entity{.ts,.js}'],
             synchronize: true,
+            ssl: {
+                rejectUnauthorized: false, // For self-signed certificates
+            },
         }),
         UsersModule, 
         AuthModule,
