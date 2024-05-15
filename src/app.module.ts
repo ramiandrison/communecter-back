@@ -24,9 +24,9 @@ import { EmailModule } from './modules/email/email.module';
             serveRoot: process.env.MULTER_DEST,
         }),
         TypeOrmModule.forRoot({
-            type: "mysql",
+            type: "postgres",
             host: process.env.DATABASE_HOST,
-            port: parseInt(process.env.DATABASE_PORT),
+            //port: parseInt(process.env.DATABASE_PORT),
             username: process.env.DATABASE_USER,
             password: process.env.DATABASE_PASSWORD,
             database: process.env.DATABASE_NAME,
