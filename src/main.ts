@@ -4,10 +4,17 @@ import { ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './filters/http-exception.filter';
 import { TransformInterceptor } from './filters/api.interceptor';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
     const PORT = parseInt(process.env.PORT, 10) || 3000;
+
+    app.useStaticAssets(join(__dirname, '..', 'public/build'));
+    app.setBaseViewsDir(join(__dirname, '..', 'public/build'));
+    app.setViewEngine('html');
 
     app.useGlobalPipes(new ValidationPipe(
         {
@@ -19,7 +26,17 @@ async function bootstrap() {
 
     app.useGlobalInterceptors(new TransformInterceptor());
 
-    app.setGlobalPrefix('api'); // /api/route
+    // Set global prefix for API routes
+    app.setGlobalPrefix('api');
+
+    // Middleware to handle React routes
+    app.use((req, res, next) => {
+        if (!req.path.startsWith('/api')) {
+            res.sendFile(join(__dirname, '..', 'public/build', 'index.html'));
+        } else {
+            next();
+        }
+    });
 
     app.useGlobalFilters(new HttpExceptionFilter());
 
@@ -27,7 +44,7 @@ async function bootstrap() {
         .setTitle('API DOC')
         .setDescription('Documentation de l\'api')
         .setVersion('1.0')
-        .addTag('co')
+        .addTag('Doc')
         .addBearerAuth()
         .build();
     const document = SwaggerModule.createDocument(app, config);
