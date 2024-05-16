@@ -109,18 +109,6 @@ export class UserService {
         return user ? this.userParser.parseOne(user) : null
     }
 
-    async findByEmail(email: string): Promise<User | null>{
-        return await this.usersRepository.findOneBy({ email });
-    }
-
-    async findByResetPassWordToken(resetPasswordToken: string): Promise<User | null>{
-        return this.usersRepository.findOneBy({ resetPasswordToken });
-    }
-
-    async findByAccountActivationToken(activationToken: string): Promise<User | null>{
-        return this.usersRepository.findOneBy({ activationToken });
-    }
-
     async remove(id: number): Promise<void> {
         await this.usersRepository.delete(id);
     }
