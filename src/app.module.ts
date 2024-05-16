@@ -1,13 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './modules/user/user.module';
-import { DataSource } from 'typeorm';
-import { User } from './entities/user/user.entity';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import { AuthModule } from './modules/auth/auth.module';
-import { TokenBlackList } from './entities/tokenBlackList/token.black-list';
 import { FileModule } from './modules/file/file.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -23,18 +21,22 @@ import { EmailModule } from './modules/email/email.module';
             rootPath: join(__dirname, '..', 'uploads'),  // Adjust this path as needed, Allow getting file from URL
             serveRoot: process.env.MULTER_DEST,
         }),
-        TypeOrmModule.forRoot({
-            type: "postgres",
-            host: process.env.DATABASE_HOST,
-            port: parseInt(process.env.DATABASE_PORT),
-            username: process.env.DATABASE_USER,
-            password: process.env.DATABASE_PASSWORD,
-            database: process.env.DATABASE_NAME,
-            entities: [User,TokenBlackList], //[__dirname + '/**/*.entity{.ts,.js}'],
-            synchronize: true,
-            ssl: {
-                rejectUnauthorized: false, // For self-signed certificates
-            },
+        TypeOrmModule.forRootAsync({
+            imports: [ConfigModule],
+            useFactory: async (configService: ConfigService) => ({
+                type: configService.get<'mysql' | 'postgres'>('DATABASE_TYPE'),
+                host: configService.get<string>('DATABASE_HOST'),
+                port: configService.get<number>('DATABASE_PORT', 5432),
+                username: configService.get<string>('DATABASE_USER'),
+                password: configService.get<string>('DATABASE_PASSWORD'),
+                database: configService.get<string>('DATABASE_NAME'),
+                entities: [__dirname + '/**/*.entity{.ts,.js}'],
+                synchronize: true,
+                ssl: {
+                    rejectUnauthorized: false, // For self-signed certificates
+                },
+            }),
+            inject: [ConfigService],
         }),
         UsersModule, 
         AuthModule,

@@ -11,14 +11,15 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from 'src/guards/jwt.strategy';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TokenBlackList } from 'src/entities/tokenBlackList/token.black-list';
+import { TokenBlackList } from 'src/entities/tokenBlackList/token-black-list.entity';
 import { EmailService } from 'src/services/email/email.service';
+import { User } from 'src/entities/user/user.entity';
 
 @Module({
     imports: [
         UsersModule,
         PassportModule,
-        TypeOrmModule.forFeature([TokenBlackList]),
+        TypeOrmModule.forFeature([TokenBlackList, User]),
         JwtModule.register({}),
         //Commented because login and count activation and reset password token have different expiration (See authService)
         /*JwtModule.registerAsync({
@@ -32,20 +33,17 @@ import { EmailService } from 'src/services/email/email.service';
     ],
     providers: [
         AuthService,
-        UserService,
         EmailService,
         JwtStrategy,
-        /*{
-          provide: APP_GUARD,
-          useClass: AuthGuard,
-        },*/
         {
           provide: APP_GUARD,
           useClass: JwtAuthGuard,
         }
     ],
     controllers: [AuthController],
-    exports: [AuthService]
+    exports: [
+        AuthService
+    ]
 })
 
 export class AuthModule {}

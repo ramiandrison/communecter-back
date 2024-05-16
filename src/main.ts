@@ -19,7 +19,7 @@ async function bootstrap() {
 
     app.useGlobalInterceptors(new TransformInterceptor());
 
-    //app.setGlobalPrefix('api'); // /api/route
+    app.setGlobalPrefix('api'); // /api/route
 
     app.useGlobalFilters(new HttpExceptionFilter());
 
@@ -31,7 +31,7 @@ async function bootstrap() {
         .addBearerAuth()
         .build();
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, document);
+    SwaggerModule.setup('api/doc', app, document);
 
     await app.listen(PORT);
 }

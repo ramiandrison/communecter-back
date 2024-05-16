@@ -9,8 +9,7 @@ import { UserDto } from 'src/dto/user/user.dto';
 import { UserParser } from 'src/parsers/user/user.parser';
 import { QueryUserDto } from 'src/dto/user/query-user.dto';
 import { UpdateUserDto } from 'src/dto/user/update-user.dto';
-import { ApiResponse } from 'src/filters/api.response';
-import { MESSAGE_ACTIVATION_MAIL_SENT, MESSAGE_USER_NOT_FOUND, MESSAGE_USER_OR_EMAIL_ALREADY_EXIST } from 'src/constants/view-model';
+import { MESSAGE_USER_NOT_FOUND, MESSAGE_USER_OR_EMAIL_ALREADY_EXIST } from 'src/constants/view-model';
 import { EmailService } from '../email/email.service';
 import { ConfigService } from '@nestjs/config';
 
@@ -22,7 +21,7 @@ export class UserService {
         private userParser: UserParser,
         private emailService: EmailService,
         private jwtService: JwtService,
-        private configService: ConfigService
+        private configService: ConfigService,
     ) {}
 
     async save(user: User){
@@ -71,7 +70,7 @@ export class UserService {
                 }
             })
         }
-        return user;
+        return this.userParser.parseOne(user);; 
     }
 
     async update(userId: number, updateUserDto: UpdateUserDto): Promise<UserDto|any> {

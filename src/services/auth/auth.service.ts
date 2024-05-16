@@ -1,33 +1,37 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserService } from '../user/user.service';
 import { LoginDto } from 'src/dto/auth/login.dto';
 import * as bcrypt from 'bcrypt';
-import { MESSAGE_EXPIRED_TOKEN, MESSAGE_TWO_PASSWORD_NOT_EQUAL, MESSAGE_USER_NOT_FOUND, MESSAGE_WRONG_PASSWORD } from 'src/constants/view-model';
-import { TokenBlackList } from 'src/entities/tokenBlackList/token.black-list';
+import { MESSAGE_EXPIRED_TOKEN, MESSAGE_TWO_PASSWORD_NOT_EQUAL, MESSAGE_USER_NEED_ACTIVATION, MESSAGE_USER_NOT_FOUND, MESSAGE_WRONG_PASSWORD } from 'src/constants/view-model';
+import { TokenBlackList } from 'src/entities/tokenBlackList/token-black-list.entity';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from '../email/email.service';
 import { ResetPasswordDto } from 'src/dto/auth/reset-password.dto';
 import { ChangePasswordDto } from 'src/dto/auth/change-password.dto';
 import { ActiveAccountDto } from 'src/dto/auth/active-account.dto';
+import { User } from 'src/entities/user/user.entity';
 
 @Injectable()
 export class AuthService {
     constructor(
         @InjectRepository(TokenBlackList)
         private tokenRepository: Repository<TokenBlackList>,
-        private userService: UserService,
+        @InjectRepository(User)
+        private usersRepository: Repository<User>,
         private jwtService: JwtService,
         private configService: ConfigService,
         private emailService: EmailService,
     ){}
 
     async login(loginDto: LoginDto): Promise<any> {
-        const user = await this.userService.findByEmail(loginDto.email);
+        const user = await this.usersRepository.findOneBy({ email: loginDto.email });
         if(!user){
             throw new NotFoundException(null, MESSAGE_USER_NOT_FOUND); 
+        }
+        if(!user.activated){
+            throw new UnauthorizedException(null, MESSAGE_USER_NEED_ACTIVATION);
         }
         const isMatch = await bcrypt.compare(loginDto.password, user?.password);
         if (!isMatch) {
@@ -67,7 +71,7 @@ export class AuthService {
     }
 
     async generateResetPasswordToken(email: string): Promise<void> {
-        const user = await this.userService.findByEmail(email);
+        const user = await this.usersRepository.findOneBy({email});
         if (!user) {
             throw new NotFoundException(null, MESSAGE_USER_NOT_FOUND);
         }
@@ -84,7 +88,7 @@ export class AuthService {
             expiresIn: '5m', // Longer expiration for reset password tokens
         });
         user.resetPasswordToken = resetPasswordToken
-        await this.userService.save(user);
+        await this.usersRepository.save(user);
 
         this.emailService.sendMail({
             "to": user.email,
@@ -98,7 +102,7 @@ export class AuthService {
 
     //Reset password if forget
     async resetPassword(resetPasswordDto : ResetPasswordDto): Promise<any>{
-        const user = await this.userService.findByResetPassWordToken(resetPasswordDto.token);
+        const user = await this.usersRepository.findOneBy({resetPasswordToken: resetPasswordDto.token});
         if (!user) {
             throw new NotFoundException(null, MESSAGE_USER_NOT_FOUND);
         }
@@ -112,7 +116,7 @@ export class AuthService {
             const hashedPassword = await bcrypt.hash(resetPasswordDto.password, 10);
             user.password = hashedPassword;
             user.resetPasswordToken = null;
-            await this.userService.save(user);
+            await this.usersRepository.save(user);
         }
     }
 
@@ -133,7 +137,7 @@ export class AuthService {
     }
 
     async activeAccount(activeAccountDto : ActiveAccountDto): Promise<any>{
-        const user = await this.userService.findByAccountActivationToken(activeAccountDto.token);
+        const user = await this.usersRepository.findOneBy({activationToken: activeAccountDto.token});
         if (!user) {
             throw new NotFoundException(null, MESSAGE_USER_NOT_FOUND);
         }
@@ -143,7 +147,7 @@ export class AuthService {
         if(userData){
             user.activated = true;
             user.activationToken = null;
-            await this.userService.save(user);
+            await this.usersRepository.save(user);
         }
     }
 }
