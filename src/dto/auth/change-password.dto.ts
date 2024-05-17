@@ -11,5 +11,5 @@ export class ChangePasswordDto {
 
     @IsNotEmpty()
     @ApiProperty({ example: "123456789", description: 'Repeter le mot de passe' })
-    duplicatePassword: string;
+    repeatPassword: string;
 }

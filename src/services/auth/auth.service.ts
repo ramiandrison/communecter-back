@@ -121,8 +121,29 @@ export class AuthService {
     }
 
     //Change password if you want to change it
-    async changePassword(changePasswordDto: ChangePasswordDto): Promise<any>{
+    async changePassword(changePasswordDto: ChangePasswordDto, userId : number): Promise<any>{
+        const user = await this.usersRepository.findOneBy({id: userId});
+        if (!user) {
+            throw new NotFoundException(null, MESSAGE_USER_NOT_FOUND);
+        }
 
+        if(!user.activated){
+            throw new UnauthorizedException(null, MESSAGE_USER_NEED_ACTIVATION);
+        }
+
+        const isMatch = await bcrypt.compare(changePasswordDto.currentPassword, user?.password);
+        if (!isMatch) {
+            throw new UnauthorizedException(null, MESSAGE_WRONG_PASSWORD);
+        }
+
+        if(changePasswordDto.newPassword !== changePasswordDto.repeatPassword){
+            throw new UnauthorizedException(null, MESSAGE_TWO_PASSWORD_NOT_EQUAL);
+        }
+
+        const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+        user.password = hashedPassword;
+        await this.usersRepository.save(user);
+        return ;
     }
 
     //login not pass here (only activation token and reset password token)

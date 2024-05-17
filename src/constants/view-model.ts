@@ -49,7 +49,7 @@ export const CODE_PASSWORD_RESETED_SUCCESSFULLY = 'PASSWORD_RESETED_SUCCESSFULLY
 export const MESSAGE_PERMISSION_DENIED = 'Permission denied !';
 export const CODE_PERMISSION_DENIED = 'PERMISSION_DENIED';
 
-export const MESSAGE_TWO_PASSWORD_NOT_EQUAL = 'Les deux mots de passes ne sont pas le même';
+export const MESSAGE_TWO_PASSWORD_NOT_EQUAL = 'The new password and the repeated password are not the same';
 export const CODE_TWO_PASSWORD_NOT_EQUAL = 'TWO_PASSWORD_NOT_EQUAL';
 
 export const MESSAGE_INVALID_REQUEST = 'The request is not valid';

@@ -53,11 +53,12 @@ export class AuthController {
         return this.authService.resetPassword(resetPasswordDto);
     }
 
-    @Get('changePassword')
+    @Post('changePassword')
     @ApiOperation({ summary: 'Changer le mot de passe' })
     @ApiBearerAuth()
-    changePassword(changePassword: ChangePasswordDto, @GetUser() user:any){
-        // teto no farany
+    changePassword(@Body() changePassword: ChangePasswordDto, @GetUser() user:any){
+        const userId = user?.sub;
+        return this.authService.changePassword(changePassword, userId);
     }
 
     @Public()
