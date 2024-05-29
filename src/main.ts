@@ -9,9 +9,9 @@ import { join } from 'path';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
-
-    const PORT = parseInt(process.env.PORT, 10) || 3000;
-
+    
+    app.enableCors();
+    
     app.useStaticAssets(join(__dirname, '..', 'public/build'));
     app.setBaseViewsDir(join(__dirname, '..', 'public/build'));
     app.setViewEngine('html');
@@ -50,6 +50,7 @@ async function bootstrap() {
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api/doc', app, document);
 
+    const PORT = parseInt(process.env.PORT, 10) || 3000;
     await app.listen(PORT);
 }
 bootstrap();
